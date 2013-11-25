@@ -462,7 +462,7 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
     {
         ALOGI("BT module name is: %s\n", bt_chip);
         if (!strcmp(bt_chip, "ap6210"))
-            sprintf(p_chip_id_str, "bcm20710a1");
+            sprintf(p_chip_id_str, "bcm20710a1_26M");
         else if (!strcmp(bt_chip, "ap6210_24M"))
             sprintf(p_chip_id_str, "bcm20710a1_24M");
         else if (!strcmp(bt_chip, "ap6330") || !strcmp(bt_chip, "ap6493"))
