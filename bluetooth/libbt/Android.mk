@@ -43,8 +43,8 @@ endif
 ifeq ($(TARGET_PRODUCT), full_wingray)
     include $(LOCAL_PATH)/conf/moto/wingray/Android.mk
 endif
-ifeq ($(strip $(TARGET_PRODUCT)), rk30sdk)
-    include $(LOCAL_PATH)/conf/rockchip/$(TARGET_PRODUCT)/Android.mk
-endif
+#ifeq ($(strip $(TARGET_PRODUCT)), rk30sdk)
+    include $(LOCAL_PATH)/conf/rockchip/rk30sdk/Android.mk
+#endif
 
 endif # BOARD_HAVE_BLUETOOTH_BCM

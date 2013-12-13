@@ -1,6 +1,7 @@
 generated_sources := $(local-generated-sources-dir)
 
-SRC := $(call my-dir)/include/$(addprefix vnd_, $(addsuffix .txt,$(basename $(TARGET_DEVICE))))
+#SRC := $(call my-dir)/include/$(addprefix vnd_, $(addsuffix .txt,$(basename $(TARGET_DEVICE))))
+SRC := $(call my-dir)/include/vnd_rk30sdk.txt
 ifeq (,$(wildcard $(SRC)))
 # configuration file does not exist. Use default one
 SRC := $(call my-dir)/include/vnd_generic.txt
