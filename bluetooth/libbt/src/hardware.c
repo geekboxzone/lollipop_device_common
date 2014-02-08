@@ -79,6 +79,7 @@
 #define HCI_VSC_ENABLE_WBS                      0xFC7E
 #define HCI_VSC_LAUNCH_RAM                      0xFC4E
 #define HCI_READ_LOCAL_BDADDR                   0x1009
+#define HCI_VSC_PCM2_SETTINGS                   0xFCAE
 
 #define HCI_EVT_CMD_CMPL_STATUS_RET_BYTE        5
 #define HCI_EVT_CMD_CMPL_LOCAL_NAME_STRING      6
@@ -91,7 +92,11 @@
 #define BD_ADDR_LEN                             6
 #define LOCAL_NAME_BUFFER_LEN                   32
 #define LOCAL_BDADDR_PATH_BUFFER_LEN            256
+#define PCM2_SETTINGS_PARAM_SIZE                26
+#define PCM2_SETTING_ACTION_READ                0x01
+#define PCM2_SETTING_ACTION_WRITE               0x00
 
+#define STREAM_TO_UINT8(u8, p)   {u8 = (uint16_t)(*(p)); (p) += 1;}
 #define STREAM_TO_UINT16(u16, p) {u16 = ((uint16_t)(*(p)) + (((uint16_t)(*((p) + 1))) << 8)); (p) += 2;}
 #define UINT8_TO_STREAM(p, u8)   {*(p)++ = (uint8_t)(u8);}
 #define UINT16_TO_STREAM(p, u16) {*(p)++ = (uint8_t)(u16); *(p)++ = (uint8_t)((u16) >> 8);}
@@ -155,6 +160,19 @@ typedef struct {
     const uint32_t delay_time;
 } fw_settlement_entry_t;
 
+uint8_t bt_sco_2076_pcm2_param[PCM2_SETTINGS_PARAM_SIZE] =
+{
+};
+// configure from bt_vendor.conf
+uint8_t bt_sco_2076_pcm2_param_cfg[PCM2_SETTINGS_PARAM_SIZE] =
+{
+    PCM2_SETTING_ACTION_WRITE,  // action
+    0x01,                   // test_Option 0x01 - soft reset, 0x02 - Loopback
+};
+
+uint8_t bt_sco_2076_pcm2_param_cfg_flag[PCM2_SETTINGS_PARAM_SIZE] =
+{
+};
 
 /******************************************************************************
 **  Externs
@@ -167,6 +185,13 @@ extern uint8_t vnd_local_bd_addr[BD_ADDR_LEN];
 /******************************************************************************
 **  Static variables
 ******************************************************************************/
+
+//used to read PCM2 settings
+static uint8_t bt_sco_2076_pcm2_read_param[2] =
+{
+    PCM2_SETTING_ACTION_READ,   // action
+    0x01,                   // test_Option 0x01 - soft reset, 0x02 - Loopback
+};
 
 static char fw_patchfile_path[256] = FW_PATCHFILE_LOCATION;
 static char fw_patchfile_name[128] = { 0 };
@@ -1640,3 +1665,175 @@ void hw_epilog_process(void)
     }
 }
 #endif // (HW_END_WITH_HCI_RESET == TRUE)
+
+/********************************************************************************
+AP6476 PCM2 Setup
+*********************************************************************************/
+
+/************************helper functions****************************************/
+static void dumpHex(const char * array, int len)
+{
+    int i;
+    for(i = 0; i < len; i++)
+        ALOGE("0x%2x", array[i]);
+}
+
+static int isDigital(char c)
+{
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+static char c2d(char c)
+{
+        if(c >= '0' && c <= '9') return c - '0';
+
+        if(c >= 'a' && c <= 'f') return c - 'a' + 10;
+
+        if(c >= 'A' && c <= 'F') return c - 'A' + 10;
+
+        return 0;
+}
+static char s2c(const char *p)
+{
+        char h = c2d(*p), l = c2d(*(p + 1));
+        return  h << 4 | l;
+}
+
+static void parse_pcm2_params(char *data)
+{
+        int i = 0;
+        const char  *p = data;
+        for(i = 1; i < PCM2_SETTINGS_PARAM_SIZE; i++, p += 3)
+        {
+                if(isDigital(*p) && isDigital(*(p+1)))
+                {
+                        bt_sco_2076_pcm2_param_cfg[i] = s2c(p);
+                        /* Record that the parameter isn't set as xx */
+                        bt_sco_2076_pcm2_param_cfg_flag[i] = 1;
+                }
+        }
+        return;
+}
+
+static void hw_pcm2_cfg_cback(void *p_mem)
+{
+    HC_BT_HDR *p_evt_buf = (HC_BT_HDR *) p_mem;
+    uint8_t     *p;
+    uint16_t    opcode;
+    HC_BT_HDR  *p_buf=NULL;
+    uint8_t     oplen, status;
+    int i = 0;
+
+    p = (uint8_t *)(p_evt_buf + 1) + HCI_EVT_CMD_CMPL_OPCODE;
+    STREAM_TO_UINT16(opcode,p);
+    STREAM_TO_UINT8(status,p);
+
+    ALOGE("opcode 0x%4x, status %d, len %d", opcode, status, p_evt_buf->len);
+
+    if ((opcode == HCI_VSC_PCM2_SETTINGS) && (0 == status))
+    {
+        memcpy(bt_sco_2076_pcm2_param, p, PCM2_SETTINGS_PARAM_SIZE);
+        dumpHex((const char *)bt_sco_2076_pcm2_param , PCM2_SETTINGS_PARAM_SIZE);
+        bt_sco_2076_pcm2_param[0] = PCM2_SETTING_ACTION_WRITE;
+        for(i = 1; i < PCM2_SETTINGS_PARAM_SIZE; i++)
+        {
+            if(bt_sco_2076_pcm2_param_cfg_flag[i])
+                bt_sco_2076_pcm2_param[i] = bt_sco_2076_pcm2_param_cfg[i];
+        }
+
+        ////////// set PCM2 ///////////////
+        if (bt_vendor_cbacks)
+            p_buf = (HC_BT_HDR *) bt_vendor_cbacks->alloc(BT_HC_HDR_SIZE + \
+                                                HCI_CMD_PREAMBLE_SIZE + \
+                                                PCM2_SETTINGS_PARAM_SIZE);
+         if (p_buf)
+         {
+             p_buf->event = MSG_STACK_TO_HC_HCI_CMD;
+             p_buf->offset = 0;
+             p_buf->layer_specific = 0;
+             p_buf->len = HCI_CMD_PREAMBLE_SIZE + PCM2_SETTINGS_PARAM_SIZE;
+             p = (uint8_t *) (p_buf + 1);
+             UINT16_TO_STREAM(p, HCI_VSC_PCM2_SETTINGS);
+             *p++ = PCM2_SETTINGS_PARAM_SIZE;
+             memcpy(p, bt_sco_2076_pcm2_param, PCM2_SETTINGS_PARAM_SIZE);
+             ALOGE("PCM2 Settings dump");
+             dumpHex((const char *)bt_sco_2076_pcm2_param, PCM2_SETTINGS_PARAM_SIZE);
+
+             if (bt_vendor_cbacks->xmit_cb(HCI_VSC_PCM2_SETTINGS,\
+                                               p_buf, NULL) == FALSE)
+             {
+                 bt_vendor_cbacks->dealloc(p_buf);
+             }
+          }
+    }
+
+    /* Free the RX event buffer */
+    if (bt_vendor_cbacks)
+        bt_vendor_cbacks->dealloc(p_evt_buf);
+
+    if (bt_vendor_cbacks)
+        bt_vendor_cbacks->scocfg_cb(BT_VND_OP_RESULT_SUCCESS);
+}
+
+int is2076()
+{
+    return (strstr(hw_cfg_cb.local_chip_name, "2076") != NULL);
+}
+
+void hw_pcm2_config(void)
+{
+    HC_BT_HDR  *p_buf = NULL;
+    uint8_t     *p, ret;
+
+    uint16_t cmd_u16 = HCI_CMD_PREAMBLE_SIZE + sizeof(bt_sco_2076_pcm2_read_param);
+
+
+    if (bt_vendor_cbacks)
+        p_buf = (HC_BT_HDR *) bt_vendor_cbacks->alloc(BT_HC_HDR_SIZE+cmd_u16);
+
+    if (p_buf)
+    {
+        p_buf->event = MSG_STACK_TO_HC_HCI_CMD;
+        p_buf->offset = 0;
+        p_buf->layer_specific = 0;
+        p_buf->len = cmd_u16;
+
+        p = (uint8_t *) (p_buf + 1);
+
+        UINT16_TO_STREAM(p, HCI_VSC_PCM2_SETTINGS);
+        *p++ = sizeof(bt_sco_2076_pcm2_read_param);
+        memcpy(p, &bt_sco_2076_pcm2_read_param, sizeof(bt_sco_2076_pcm2_read_param));
+        cmd_u16 = HCI_VSC_PCM2_SETTINGS;
+
+        if ((ret=bt_vendor_cbacks->xmit_cb(cmd_u16, p_buf, hw_pcm2_cfg_cback)) == FALSE)
+        {
+            bt_vendor_cbacks->dealloc(p_buf);
+        }
+        else
+            return;
+    }
+
+    if (bt_vendor_cbacks)
+    {
+        ALOGE("vendor lib PCM2 aborted!");
+        //bt_vendor_cbacks->scocfg_cb(BT_VND_OP_RESULT_FAIL);
+    }
+    if (bt_vendor_cbacks)
+    {
+        ALOGE("vendor lib PCM2 aborted!");
+        //bt_vendor_cbacks->scocfg_cb(BT_VND_OP_RESULT_FAIL);
+    }
+}
+/*******************Get AP6476_PCM2_Setup from bt_vendor.conf *******************/
+int get_pcm2_settings(char *p_conf_name, char *p_conf_value, int param)
+{
+    int i;
+    memset(bt_sco_2076_pcm2_param_cfg, 0, PCM2_SETTINGS_PARAM_SIZE);
+    memset(bt_sco_2076_pcm2_param_cfg_flag, 0, PCM2_SETTINGS_PARAM_SIZE);
+    parse_pcm2_params(p_conf_value);
+    for(i = 1; i < PCM2_SETTINGS_PARAM_SIZE; i++)
+                ALOGE("%x flag = %x", bt_sco_2076_pcm2_param_cfg[i] & 0x00FF, bt_sco_2076_pcm2_param_cfg_flag[i] & 0x0ff);
+
+    printf("\n");
+    return 0;
+}
+

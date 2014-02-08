@@ -50,12 +50,14 @@ uint8_t hw_lpm_enable(uint8_t turn_on);
 uint32_t hw_lpm_get_idle_timeout(void);
 void hw_lpm_set_wake_state(uint8_t wake_assert);
 #if (SCO_CFG_INCLUDED == TRUE)
+void hw_pcm2_config(void);
 void hw_sco_config(void);
 #endif
 void vnd_load_conf(const char *p_path);
 #if (HW_END_WITH_HCI_RESET == TRUE)
 void hw_epilog_process(void);
 #endif
+int is2076();
 
 /******************************************************************************
 **  Variables
@@ -141,7 +143,12 @@ static int op(bt_vendor_opcode_t opcode, void *param)
                 if (*state == BT_VND_PWR_OFF)
                     upio_set_bluetooth_power(UPIO_BT_POWER_OFF);
                 else if (*state == BT_VND_PWR_ON)
+                {
                     upio_set_bluetooth_power(UPIO_BT_POWER_ON);
+                    BTVNDDBG("Delay for a while after BT power on");
+                    usleep(200000);
+
+                }
             }
             break;
 
@@ -154,7 +161,16 @@ static int op(bt_vendor_opcode_t opcode, void *param)
         case BT_VND_OP_SCO_CFG:
             {
 #if (SCO_CFG_INCLUDED == TRUE)
+            if (is2076())
+            {
+                ALOGD("PCM2 Settings for AP6476(BCM2076)");
+                hw_pcm2_config();
+            }
+            else
+            {
+                ALOGD("SCO config");
                 hw_sco_config();
+            }
 #else
                 retval = -1;
 #endif

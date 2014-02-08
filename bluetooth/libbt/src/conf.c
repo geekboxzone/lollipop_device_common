@@ -40,7 +40,7 @@ int hw_set_patch_file_name(char *p_conf_name, char *p_conf_value, int param);
 #if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
 int hw_set_patch_settlement_delay(char *p_conf_name, char *p_conf_value, int param);
 #endif
-
+int get_pcm2_settings(char *p_conf_name, char *p_conf_value, int param);
 
 /******************************************************************************
 **  Local type definitions
@@ -73,6 +73,7 @@ static const conf_entry_t conf_table[] = {
 #if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
     {"FwPatchSettlementDelay", hw_set_patch_settlement_delay, 0},
 #endif
+    {"AP6476_PCM2_Setup", get_pcm2_settings, 0 },
     {(const char *) NULL, NULL, 0}
 };
 
