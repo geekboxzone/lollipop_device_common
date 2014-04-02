@@ -502,6 +502,8 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
             sprintf(p_chip_id_str, "bcm2076b1");
         else if (!strcmp(bt_chip, "ap6441") || !strcmp(bt_chip, "ap6234"))
             sprintf(p_chip_id_str, "bcm43341b0");
+        else if (!strcmp(bt_chip, "ap6335"))
+            sprintf(p_chip_id_str, "bcm4339a0");
         else if (!strcmp(bt_chip, "awnb108"))
             sprintf(p_chip_id_str, "awnb108");
         else
