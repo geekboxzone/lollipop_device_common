@@ -359,6 +359,8 @@ uint8_t line_speed_to_userial_baud(uint32_t line_speed)
         baud = USERIAL_BAUD_3M;
     else if (line_speed == 2000000)
         baud = USERIAL_BAUD_2M;
+    else if (line_speed == 1500000)
+        baud = USERIAL_BAUD_1_5M;
     else if (line_speed == 1000000)
         baud = USERIAL_BAUD_1M;
     else if (line_speed == 921600)
@@ -452,6 +454,29 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
         ALOGI("FW patchfile: %s", p_chip_id_str);
         return TRUE;
     }
+
+// cmy@20121128: get bt module and replace chip name
+    char bt_chip[64] = "";
+    
+    if (bt_get_chipname(bt_chip, 63) == 0)
+    {
+        ALOGI("BT module name is: %s\n", bt_chip);
+        if (!strcmp(bt_chip, "ap6210"))
+            sprintf(p_chip_id_str, "bcm20710a1");
+        else if (!strcmp(bt_chip, "ap6210_24M"))
+            sprintf(p_chip_id_str, "bcm20710a1_24M");
+        else if (!strcmp(bt_chip, "ap6330") || !strcmp(bt_chip, "ap6493"))
+            sprintf(p_chip_id_str, "bcm40183b2");
+        else if (!strcmp(bt_chip, "ap6476"))
+            sprintf(p_chip_id_str, "bcm2076b1");
+        else if (!strcmp(bt_chip, "ap6441"))
+            sprintf(p_chip_id_str, "bcm43341b0");
+        else if (!strcmp(bt_chip, "awnb108"))
+            sprintf(p_chip_id_str, "awnb108");
+        else
+            sprintf(p_chip_id_str, "%s", bt_chip);
+    }
+    ALOGI("Target HCD file name is: %s.hcd", p_chip_id_str);
 
     if ((dirp = opendir(fw_patchfile_path)) != NULL)
     {

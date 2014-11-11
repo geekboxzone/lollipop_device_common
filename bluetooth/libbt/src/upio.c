@@ -176,6 +176,44 @@ static int init_rfkill()
     return 0;
 }
 
+// cmy@20121128: get bt module name from rfkill
+int bt_get_chipname(char* name, int len)
+{
+    int ret = -1;
+    int fd = -1;
+    int sz = 0;
+    char* rfkill_name_path = NULL;
+    
+    if (rfkill_id == -1) {
+        if (init_rfkill()) goto out;
+    }
+
+    asprintf(&rfkill_name_path, "/sys/class/rfkill/rfkill%d/name", rfkill_id);
+
+    fd = open(rfkill_name_path, O_RDONLY);
+    if (fd < 0) {
+        ALOGE("open(%s) failed: %s (%d)", rfkill_name_path, strerror(errno),
+             errno);
+        goto out;
+    }
+    
+    sz = read(fd, name, len);
+    if (sz <= 0) {
+        ALOGE("read(%s) failed: %s (%d)", rfkill_name_path, strerror(errno),
+             errno);
+        goto out;
+    }
+    name[sz] = '\0';
+    if (name[sz-1]=='\n')
+        name[sz-1] = '\0';
+
+    ret = 0;
+
+out:
+    if (fd >= 0) close(fd);
+    return ret;
+}
+
 /*****************************************************************************
 **   LPM Static Functions
 *****************************************************************************/
@@ -303,8 +341,11 @@ int upio_set_bluetooth_power(int on)
         ALOGE("set_bluetooth_power : write(%s) failed: %s (%d)",
             rfkill_state_path, strerror(errno),errno);
     }
-    else
+    else {
         ret = 0;
+        ALOGD("Delay 500ms for bluetooth power up");
+        usleep(500*1000);
+    }
 
     if (fd >= 0)
         close(fd);
