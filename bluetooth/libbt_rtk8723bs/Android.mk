@@ -1,6 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
-ifeq ($(strip $(BOARD_CONNECTIVITY_MODULE)), rtl8723bs)
+ifeq ($(findstring rtl8723bs, $(BOARD_CONNECTIVITY_MODULE)), rtl8723bs)
 
 include $(CLEAR_VARS)
 
