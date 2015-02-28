@@ -483,26 +483,28 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
 // cmy@20121128: get bt module and replace chip name
     char bt_chip[64] = "";
     
-    if (bt_get_chipname(bt_chip, 63) == 0)
+    extern int check_wifi_chip_type_string(char *type);
+	check_wifi_chip_type_string(bt_chip);
+    //if (bt_get_chipname(bt_chip, 63) == 0)
     {
         ALOGI("BT module name is: %s\n", bt_chip);
-        if (!strcmp(bt_chip, "ap6210"))
+        if (!strcmp(bt_chip, "AP6210"))
             sprintf(p_chip_id_str, "bcm20710a1_26M");
-        else if (!strcmp(bt_chip, "ap6210_24M"))
+        else if (!strcmp(bt_chip, "AP6210_24M"))
             sprintf(p_chip_id_str, "bcm20710a1_24M");
-        else if (!strcmp(bt_chip, "ap6330") || !strcmp(bt_chip, "ap6493"))
+        else if (!strcmp(bt_chip, "AP6330") || !strcmp(bt_chip, "AP6493"))
             sprintf(p_chip_id_str, "bcm40183b2");
-        else if (!strcmp(bt_chip, "ap6335")) {
+        else if (!strcmp(bt_chip, "AP6335")) {
             if (!strcmp(p_chip_id_str, "BCM20702A"))
                 sprintf(p_chip_id_str, "bcm20710a1_26M");
             else
                 sprintf(p_chip_id_str, "bcm4339a0");
         }
-        else if (!strcmp(bt_chip, "ap6476"))
+        else if (!strcmp(bt_chip, "AP6476"))
             sprintf(p_chip_id_str, "bcm2076b1");
-        else if (!strcmp(bt_chip, "ap6441") || !strcmp(bt_chip, "ap6234"))
+        else if (!strcmp(bt_chip, "AP6441") || !strcmp(bt_chip, "AP6234"))
             sprintf(p_chip_id_str, "bcm43341b0");
-        else if (!strcmp(bt_chip, "ap6335"))
+        else if (!strcmp(bt_chip, "AP6335"))
             sprintf(p_chip_id_str, "bcm4339a0");
         else if (!strcmp(bt_chip, "awnb108"))
             sprintf(p_chip_id_str, "awnb108");

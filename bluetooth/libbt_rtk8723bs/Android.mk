@@ -1,6 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
-ifeq ($(findstring rtl8723bs, $(BOARD_CONNECTIVITY_MODULE)), rtl8723bs)
+#ifeq ($(strip $(BOARD_CONNECTIVITY_MODULE)), rtl8723bs)
 
 include $(CLEAR_VARS)
 
@@ -17,9 +17,10 @@ LOCAL_C_INCLUDES += \
         $(BDROID_DIR)/hci/include
 
 LOCAL_SHARED_LIBRARIES := \
-        libcutils
+        libcutils \
+        libhardware_legacy
 
-LOCAL_MODULE := libbt-vendor
+LOCAL_MODULE := libbt-vendor-rtl8723bs
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_OWNER := realtek
@@ -29,4 +30,4 @@ include $(LOCAL_PATH)/vnd_buildcfg.mk
 
 include $(BUILD_SHARED_LIBRARY)
 
-endif # BOARD_CONNECTIVITY_MODULE
+#endif # BOARD_CONNECTIVITY_MODULE

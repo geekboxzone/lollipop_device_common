@@ -1,7 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 
-ifeq ($(strip $(BOARD_CONNECTIVITY_MODULE)),\
-      $(filter $(BOARD_CONNECTIVITY_MODULE), rtl8723au rtl8723bu rtl8761auv))
+#ifeq ($(strip $(BOARD_CONNECTIVITY_MODULE)),\
+#      $(filter $(BOARD_CONNECTIVITY_MODULE), rtl8723au rtl8723bu rtl8761auv))
 
 include $(CLEAR_VARS)
 
@@ -17,7 +17,7 @@ LOCAL_C_INCLUDES += \
 LOCAL_SHARED_LIBRARIES := \
         libcutils
 
-LOCAL_MODULE := libbt-vendor
+LOCAL_MODULE := libbt-vendor-rtl8723bu
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_OWNER := realtek
@@ -27,4 +27,4 @@ include $(LOCAL_PATH)/vnd_buildcfg.mk
 
 include $(BUILD_SHARED_LIBRARY)
 
-endif # BOARD_CONNECTIVITY_MODULE
+#endif # BOARD_CONNECTIVITY_MODULE

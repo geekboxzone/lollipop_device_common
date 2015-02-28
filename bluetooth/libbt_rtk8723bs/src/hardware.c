@@ -72,8 +72,8 @@
 #define HCI_UART_3WIRE  2
 
 
-#define FIRMWARE_DIRECTORY "/system/etc/firmware/rtlbt/"
-#define BT_CONFIG_DIRECTORY "/system/etc/firmware/rtlbt/"
+#define FIRMWARE_DIRECTORY "/system/etc/firmware/"
+#define BT_CONFIG_DIRECTORY "/system/etc/firmware/"
 #define PATCH_DATA_FIELD_MAX_SIZE     252
 
 #define BT_CAL_DIRECTORY "/data/misc/bluedroid/"
@@ -573,10 +573,18 @@ static uint8_t hw_config_set_controller_baudrate(HC_BT_HDR *p_buf, uint32_t baud
     return (retval);
 }
 
+static char bt_chip_type[64];
+
 static const char *get_firmware_name()
 {
     static char firmware_file_name[PATH_MAX] = {0};
-    sprintf(firmware_file_name, FIRMWARE_DIRECTORY"rtlbt_fw");
+    if (bt_chip_type[0] == 0)
+		check_wifi_chip_type_string(bt_chip_type);
+	if (!strcmp(bt_chip_type, "RTL8723BS")) {
+		sprintf(firmware_file_name, FIRMWARE_DIRECTORY"rtl8723bs_fw");	
+	} else {
+		sprintf(firmware_file_name, FIRMWARE_DIRECTORY"rtl8723bs_VQ0_fw");
+	}
     return firmware_file_name;
 }
 
@@ -776,7 +784,14 @@ uint32_t rtk_get_bt_config(unsigned char** config_buf,
     int fd;
     FILE* file = NULL;
 
-	sprintf(bt_config_file_name, BT_CONFIG_DIRECTORY"rtlbt_config");
+    if (bt_chip_type[0] == 0)
+		check_wifi_chip_type_string(bt_chip_type);
+	if (!strcmp(bt_chip_type, "RTL8723BS")) {
+		sprintf(bt_config_file_name, BT_CONFIG_DIRECTORY"rtl8723bs_config");
+	} else {
+		sprintf(bt_config_file_name, BT_CONFIG_DIRECTORY"rtl8723bs_VQ0_config");
+	}
+	
     ALOGI("BT config file: %s", bt_config_file_name);
 
     if (stat(bt_config_file_name, &st) < 0)

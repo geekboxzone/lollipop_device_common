@@ -19,7 +19,8 @@ LOCAL_C_INCLUDES += \
 
 LOCAL_SHARED_LIBRARIES := \
         libcutils \
-        liblog
+        liblog \
+        libhardware_legacy
 
 LOCAL_MODULE := libbt-vendor
 LOCAL_MODULE_TAGS := optional
