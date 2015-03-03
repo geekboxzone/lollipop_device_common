@@ -24,7 +24,15 @@ LOCAL_MODULE := libbt-vendor-rtl8723bs
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_OWNER := realtek
-LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR_SHARED_LIBRARIES)
+
+ifneq (1,$(strip $(shell expr $(PLATFORM_VERSION) \>= 5.0)))
+ LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR_SHARED_LIBRARIES)
+else
+ifneq ($(strip $(TARGET_2ND_ARCH)), )
+LOCAL_MULTILIB := both
+endif
+LOCAL_MODULE_RELATIVE_PATH :=
+endif
 
 include $(LOCAL_PATH)/vnd_buildcfg.mk
 
