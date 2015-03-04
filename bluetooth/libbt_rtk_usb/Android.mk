@@ -31,7 +31,7 @@ endif
 LOCAL_MODULE_RELATIVE_PATH :=
 endif
 
-include $(LOCAL_PATH)/vnd_buildcfg.mk
+#include $(LOCAL_PATH)/vnd_buildcfg.mk
 
 include $(BUILD_SHARED_LIBRARY)
 
