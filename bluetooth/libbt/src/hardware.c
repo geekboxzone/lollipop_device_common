@@ -492,6 +492,8 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
             sprintf(p_chip_id_str, "bcm20710a1_26M");
         else if (!strcmp(bt_chip, "AP6210_24M"))
             sprintf(p_chip_id_str, "bcm20710a1_24M");
+        else if (!strcmp(bt_chip, "AP6212"))
+            sprintf(p_chip_id_str, "bcm43438a0");            
         else if (!strcmp(bt_chip, "AP6330") || !strcmp(bt_chip, "AP6493"))
             sprintf(p_chip_id_str, "bcm40183b2");
         else if (!strcmp(bt_chip, "AP6335")) {
@@ -506,6 +508,8 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
             sprintf(p_chip_id_str, "bcm43341b0");
         else if (!strcmp(bt_chip, "AP6335"))
             sprintf(p_chip_id_str, "bcm4339a0");
+        else if (!strcmp(bt_chip, "AP6354"))
+            sprintf(p_chip_id_str, "bcm4354a1");            
         else if (!strcmp(bt_chip, "awnb108"))
             sprintf(p_chip_id_str, "awnb108");
         else
