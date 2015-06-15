@@ -487,14 +487,8 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
 	check_wifi_chip_type_string(bt_chip);
     //if (bt_get_chipname(bt_chip, 63) == 0)
     {
-        ALOGI("BT module name is: %s\n", bt_chip);
-        if (!strcmp(bt_chip, "AP6210"))
-            sprintf(p_chip_id_str, "bcm20710a1_26M");
-        else if (!strcmp(bt_chip, "AP6210_24M"))
-            sprintf(p_chip_id_str, "bcm20710a1_24M");
-        else if (!strcmp(bt_chip, "AP6212"))
-            sprintf(p_chip_id_str, "bcm43438a0");            
-        else if (!strcmp(bt_chip, "AP6330") || !strcmp(bt_chip, "AP6493"))
+        ALOGI("BT module name is: %s, p_chip_id_str = %s\n", bt_chip, p_chip_id_str);
+        if (!strcmp(bt_chip, "AP6330") || !strcmp(bt_chip, "AP6493"))
             sprintf(p_chip_id_str, "bcm40183b2");
         else if (!strcmp(bt_chip, "AP6335")) {
             if (!strcmp(p_chip_id_str, "BCM20702A"))
@@ -512,8 +506,15 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
             sprintf(p_chip_id_str, "bcm4354a1");            
         else if (!strcmp(bt_chip, "awnb108"))
             sprintf(p_chip_id_str, "awnb108");
-        else
-            sprintf(p_chip_id_str, "%s", bt_chip);
+
+        // auto recognize
+        if (!strcmp(p_chip_id_str, "BCM20702A")) {
+            if (!strcmp(bt_chip, "AP6210_24M"))
+                sprintf(p_chip_id_str, "bcm20710a1_24M");
+            else
+                sprintf(p_chip_id_str, "bcm20710a1_26M");
+        } else if (!strcmp(p_chip_id_str, "4343A0"))
+            sprintf(p_chip_id_str, "bcm43438a0");
     }
     ALOGI("Target HCD file name is: %s.hcd", p_chip_id_str);
 
