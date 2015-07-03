@@ -517,6 +517,8 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
             sprintf(p_chip_id_str, "bcm43438a0");
         else if (!strcmp(p_chip_id_str, "BCM4335C0"))
             sprintf(p_chip_id_str, "bcm4339a0");
+        else if (!strcmp(p_chip_id_str, "BCM4324B3"))
+            sprintf(p_chip_id_str, "bcm43241b4");
     }
     ALOGI("Target HCD file name is: %s.hcd", p_chip_id_str);
 
