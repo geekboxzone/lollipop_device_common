@@ -254,7 +254,7 @@ static uint8_t bt_sco_i2spcm_param[SCO_I2SPCM_PARAM_SIZE] =
 static const fw_settlement_entry_t fw_settlement_table[] = {
     {"BCM43241", 200},
     {"BCM43341", 100},
-    {(const char *) NULL, 100}  // Giving the generic fw settlement delay setting.
+    {(const char *) NULL, 200}  // Giving the generic fw settlement delay setting.
 };
 
 
